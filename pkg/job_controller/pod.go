@@ -439,6 +439,30 @@ func (jc *JobController) createNewPod(ctx context.Context, job interface{}, rt, 
 
 	podTemplate.Labels = commonutil.MergeMap(podTemplate.Labels, labels)
 
+	// inject pod affinity
+	affinity := podTemplate.Spec.Affinity
+	if affinity == nil {
+		affinity = &v1.Affinity{}
+		podTemplate.Spec.Affinity = affinity
+	}
+	podAffinity := affinity.PodAffinity
+	if podAffinity == nil {
+		podAffinity = &v1.PodAffinity{}
+		affinity.PodAffinity = podAffinity
+	}
+	// 节点亲和性
+	podAffinity.RequiredDuringSchedulingIgnoredDuringExecution = append(podAffinity.RequiredDuringSchedulingIgnoredDuringExecution, v1.PodAffinityTerm{
+		TopologyKey: "kubernetes.io/hostname",
+		LabelSelector: &metav1.LabelSelector{
+			MatchLabels: map[string]string{
+				apiv1.GroupNameLabel:   podTemplate.Labels[apiv1.GroupNameLabel],
+				apiv1.JobNameLabel:     podTemplate.Labels[apiv1.JobNameLabel],
+				apiv1.ReplicaTypeLabel: podTemplate.Labels[apiv1.ReplicaTypeLabel],
+			},
+		},
+		Namespaces: []string{metaObject.GetNamespace()},
+	})
+
 	// Submit a warning event if the user specifies restart policy for
 	// the pod template. We recommend to set it from the replica level.
 	if podTemplate.Spec.RestartPolicy != v1.RestartPolicy("") {
