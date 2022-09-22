@@ -1,8 +1,8 @@
 
 # Image URL to use all building/pushing image targets
-VERSION ?= daily
+VERSION ?= daily-rc3
 HELM_CHART_VERSION ?= 0.1.0
-IMG ?= kubedl/kubedl:$(VERSION)
+IMG ?= arugaldocker/kubedl:$(VERSION)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,maxDescLen=0,generateEmbeddedObjectMeta=true"
 
@@ -31,10 +31,17 @@ run: generate fmt vet manifests
 install: manifests
 	kustomize build config/crd | kubectl apply -f -
 
+uninstall: manifests
+	kustomize build config/crd | kubectl delete --ignore-not-found=true -f -
+
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/default | kubectl apply -f -
+
+undeploy: manifests
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/default | kubectl delete --ignore-not-found=true -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen
