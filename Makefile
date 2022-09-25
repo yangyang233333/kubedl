@@ -1,6 +1,6 @@
 
 # Image URL to use all building/pushing image targets
-VERSION ?= daily-rc3
+VERSION ?= daily-rc4
 HELM_CHART_VERSION ?= 0.1.0
 IMG ?= arugaldocker/kubedl:$(VERSION)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)

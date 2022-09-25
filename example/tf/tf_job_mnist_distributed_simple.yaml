@@ -3,6 +3,10 @@ apiVersion: "training.kubedl.io/v1alpha1"
 kind: "TFJob"
 metadata:
   name: "tf-distributed-simple"
+  annotations:
+    kubedl.io/pod-affinity-strategy: "25"
+    kubedl.io/pod-batch-size: ps-worker
+    kubedl.io/pod-topology-key: kubernetes.io/hostname
 spec:
   cleanPodPolicy: None
   tfReplicaSpecs:
